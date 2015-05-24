@@ -25,13 +25,36 @@ app.use(require('morgan')('short'));
   app.use(require("webpack-hot-middleware")(compiler, {
     log: console.log, path: '/__webpack_hmr', heartbeat: 10 * 1000
   }));
+
+  // Step 4: For bonus points, setup server side hot reloading
+  var serverConfig = require('./webpack.server.config');
+  var serverCompiler = webpack(serverConfig);
+  var serverModule;
+  serverCompiler.plugin("compile", function() {
+    serverModule = usefulPromise();
+  });
+  serverCompiler.watch(200, function(err, stats) {
+    if (err) return console.warn(err);
+    process.emit('hot-reload');
+    console.log("Server bundle rebuilt.", stats.toJson());
+    serverModule.resolve(require('./build/server-bundle'));
+  });
+
+  app.get("/", function(req, res) {
+    serverModule.then(function(m) {
+      m.api.render();
+      res.sendFile(__dirname + '/index.html');
+    });
+  });
 })();
 
-// Do anything you like with the rest of your express application.
-
-app.get("/", function(req, res) {
-  res.sendFile(__dirname + '/index.html');
-});
+function usefulPromise() {
+  var p = new Promise(function(resolve, reject) {
+    p.resolve = resolve;
+    p.reject = reject;
+  });
+  return p;
+}
 
 if (require.main === module) {
   var server = http.createServer(app);
