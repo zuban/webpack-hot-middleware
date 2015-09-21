@@ -6,6 +6,8 @@ var app = express();
 
 app.use(require('morgan')('short'));
 
+var middleware;
+
 // ************************************
 // This is the real meat of the example
 // ************************************
@@ -22,12 +24,17 @@ app.use(require('morgan')('short'));
   }));
 
   // Step 3: Attach the hot middleware to the compiler & the server
-  app.use(require("webpack-hot-middleware")(compiler, {
+  middleware = require("webpack-hot-middleware")(compiler, {
     log: console.log, path: '/__webpack_hmr', heartbeat: 10 * 1000
-  }));
+  });
+  app.use(middleware);
 })();
 
 // Do anything you like with the rest of your express application.
+app.get("/custom", function(req, res) {
+  middleware.publish({ object: 123 });
+  res.send("Sent custom message to client");
+})
 
 app.get("/", function(req, res) {
   res.sendFile(__dirname + '/index.html');

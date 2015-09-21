@@ -22,6 +22,11 @@ app.style.verticalAlign = 'middle';
 // require('unknown-module')
 // a = /regex/q
 
+var setCustomHandler = require('webpack-hot-middleware/client');
+setCustomHandler(function(obj) {
+  console.log(obj);
+});
+
 if (module.hot) {
   module.hot.accept();
   module.hot.dispose(function() {
