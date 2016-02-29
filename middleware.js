@@ -5,9 +5,13 @@ var pathMatch = helpers.pathMatch;
 
 function webpackHotMiddleware(compiler, opts) {
   opts = opts || {};
-  opts.log = typeof opts.log == 'undefined' ? console.log.bind(console) : opts.log;
+  opts.log = opts.log === undefined ? console.log.bind(console) : opts.log;
   opts.path = opts.path || '/__webpack_hmr';
   opts.heartbeat = opts.heartbeat || 10 * 1000;
+
+  var devOpts = opts.devMiddleware ? opts.devMiddleware : false;
+
+  var erroredBundles = {};
 
   var eventStream = createEventStream(opts.heartbeat);
   compiler.plugin("compile", function() {
@@ -17,12 +21,14 @@ function webpackHotMiddleware(compiler, opts) {
   compiler.plugin("done", function(statsResult) {
     statsResult = statsResult.toJson();
 
-    //for multi-compiler, stats will be an object with a 'children' array of stats
     var bundles = extractBundles(statsResult);
     bundles.forEach(function(stats) {
       if (opts.log) {
         opts.log("webpack built " + (stats.name ? stats.name + " " : "") +
           stats.hash + " in " + stats.time + "ms");
+      }
+      if (stats.errors && stats.errors.length > 0) {
+        erroredBundles[stats.hash] = stats.name;
       }
       eventStream.publish({
         name: stats.name,
@@ -40,6 +46,23 @@ function webpackHotMiddleware(compiler, opts) {
     eventStream.handler(req, res);
   };
   middleware.publish = eventStream.publish;
+
+  if (!devOpts) return middleware;
+
+  var hotMiddleware = middleware;
+  var webpackDevMiddleware = require('webpack-dev-middleware');
+  var devMiddleware = webpackDevMiddleware(compiler, devOpts);
+
+  middleware = function(req, res, next) {
+    var filename = devMiddleware.getFilenameFromUrl(req.url);
+    console.log(erroredBundles, filename);
+    return devMiddleware(req, res, function(err) {
+      if (err) return next(err);
+      return hotMiddleware(req, res, next);
+    });
+  };
+  middleware.publish = eventStream.publish;
+
   return middleware;
 }
 
