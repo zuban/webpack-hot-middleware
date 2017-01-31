@@ -6,7 +6,7 @@ var sinon = require('sinon');
 var supertest = require('supertest');
 
 var express = require('express');
-var webpackHotMiddleware = require('../middleware');
+var webpackHotMiddleware = require('../HotReplacement');
 
 describe("middleware", function() {
   var s, compiler, app, middleware;

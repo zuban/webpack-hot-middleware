@@ -1,17 +1,19 @@
 {
-  "name": "webpack-hot-middleware-example",
+  "name": "example",
   "version": "1.0.0",
-  "description": "Example of using webpack-hot-middleware",
-  "author": "Glen Mailer <glen@stainlessed.co.uk>",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^4.12.3",
-    "morgan": "^1.5.2",
-    "webpack": "^1.8.11",
-    "webpack-dev-middleware": "^1.0.11",
-    "webpack-hot-middleware": "./../"
-  },
+  "description": "* Install deps ```sh npm install ``` * Start server ```sh npm start ``` * Open page in browser http://localhost:1616 * Open the developer console * Edit `client.js` & save * Watch the page reload * Also try making a syntax error in `client.js`.",
+  "main": "client.js",
   "scripts": {
     "start:multientry": "WEBPACK_CONFIG=./webpack.config.multientry.js node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.14.1",
+    "memory-fs": "^0.4.1",
+    "morgan": "^1.7.0",
+    "webpack": "^2.2.0",
+    "webpack-dev-middleware": "^1.9.0",
+    "webpack-hot-middleware": "./../"
   }
 }
